@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <UserSecretsId>dotnet-OpenNAC.Service-A817111C-F67D-4A31-9403-A938BA0CCC9F</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Flexinets.Radius.RadiusServer\RadiusServer\Flexinets.Radius.RadiusServer.csproj" />
+    <ProjectReference Include="..\OpenNAC.Core\OpenNAC.Core.csproj" />
+    <ProjectReference Include="..\OpenNAC.Vendors.Aruba\OpenNAC.Vendors.Aruba.csproj" />
+  </ItemGroup>
+</Project>
