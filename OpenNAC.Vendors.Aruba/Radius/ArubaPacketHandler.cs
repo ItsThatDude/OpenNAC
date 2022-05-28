@@ -1,17 +1,18 @@
 ﻿using Flexinets.Radius.Core;
 using Microsoft.Extensions.Logging;
+using OpenNAC.Core.Endpoints;
 using OpenNAC.Core.Policies;
 using OpenNAC.Core.Radius;
-using System.Collections.Generic;
 
 namespace OpenNAC.Vendors.Aruba.Radius
 {
     public class ArubaPacketHandler : PacketHandlerBase
     {
-        public ArubaPacketHandler(RadiusClient source, IEnumerable<AccessPolicy> accessPolicies, ILogger logger)
-            : base(source, accessPolicies, logger)
-        {
-        }
+        public ArubaPacketHandler(ILogger<ArubaPacketHandler> logger,
+            IAccessPolicyRepository accessPolicyRepository,
+            IRadiusClientRepository radiusClientRepository,
+            IEndpointRepository endpointRepository)
+            : base(logger, accessPolicyRepository, radiusClientRepository, endpointRepository) { }
 
         public override IRadiusPacket HandleAccessPacket(RadiusRequestContext context)
         {

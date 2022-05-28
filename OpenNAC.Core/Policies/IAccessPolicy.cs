@@ -5,12 +5,15 @@ namespace OpenNAC.Core.Policies
 {
     public interface IAccessPolicy
     {
-        CollectionMatchPolicy ConditionMatchPolicy { get; set; }
+        int Priority { get; }
+        bool Enabled { get; }
+        bool EnableAccounting { get; }
+        CollectionMatchRule ConditionMatchPolicy { get; set; }
         IEnumerable<PolicyCondition> Conditions { get; }
 
         IEnumerable<AuthenticationSource> AuthenticationSources { get; }
 
-        CollectionMatchPolicy RuleMatchPolicy { get; set; }
+        CollectionMatchRule RuleMatchPolicy { get; set; }
         IEnumerable<PolicyRule> Rules { get; }
     }
 }

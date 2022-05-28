@@ -1,9 +1,9 @@
-﻿using Flexinets.Radius.Core;
+﻿using OpenNAC.Core.Radius;
 
 namespace OpenNAC.Core.Authentication
 {
     public abstract class AuthenticationSource : IAuthenticationSource
     {
-        public abstract bool Authenticate(IRadiusPacket packet);
+        public abstract AuthenticationResult Authenticate(RadiusRequestContext context);
     }
 }

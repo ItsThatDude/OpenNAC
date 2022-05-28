@@ -1,6 +1,7 @@
 using Flexinets.Net;
 using Flexinets.Radius;
 using Flexinets.Radius.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,21 +23,21 @@ namespace OpenNAC.Service
         private RadiusServer _authenticationServer;
         private RadiusServer _accountingServer;
 
-        private List<AccessPolicy> _accessPolicies;
+        private readonly IRadiusClientRepository _radiusClients;
+        private readonly IServiceProvider _serviceProvider;
 
-        public RadiusWorker(ILogger<RadiusWorker> logger)
+        public RadiusWorker(ILogger<RadiusWorker> logger, IRadiusClientRepository clientRepository, IServiceProvider serviceProvider)
         {
             _logger = logger;
-
-            _accessPolicies = new List<AccessPolicy>();
+            _radiusClients = clientRepository;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var devices = new List<RadiusClient>();
-                devices.Add(new RadiusClient { IPAddress = IPAddress.Any, Name = "Generic RADIUS Device", PacketHandler = "Default", SharedSecret = "Test1234" });
+                var devices = _radiusClients.GetAll();
 
                 var dictionaryPath = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + "/Content/Radius.dictionary";
                 var dictionary = new RadiusDictionary(dictionaryPath, NullLogger<RadiusDictionary>.Instance);
@@ -51,10 +52,10 @@ namespace OpenNAC.Service
                     switch(device.PacketHandler.ToLowerInvariant())
                     {
                         case "aruba":
-                            handler = new ArubaPacketHandler(device, _accessPolicies, _logger);
+                            handler = _serviceProvider.GetService<ArubaPacketHandler>();
                             break;
                         default:
-                            handler = new GenericPacketHandler(device, _accessPolicies, _logger);
+                            handler = _serviceProvider.GetService<GenericPacketHandler>();
                             break;
                     }
 
@@ -86,15 +87,8 @@ namespace OpenNAC.Service
             catch(Exception ex)
             {
                 _logger.LogCritical("Failed to start the Radius Worker Service.", ex);
-
                 throw;
             }
-            
-            /*while (!cancellationToken.IsCancellationRequested)
-            {
-                //_logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, cancellationToken);
-            }*/
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

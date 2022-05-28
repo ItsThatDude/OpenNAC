@@ -13,14 +13,14 @@ namespace OpenNAC.Core.Policies
 
         public bool EnableAccounting { get; set; }
 
-        public CollectionMatchPolicy ConditionMatchPolicy { get; set; }
+        public CollectionMatchRule ConditionMatchPolicy { get; set; }
         private List<PolicyCondition> _conditions = new List<PolicyCondition>();
         public IEnumerable<PolicyCondition> Conditions => _conditions;
 
         private List<AuthenticationSource> _authenticationSources = new List<AuthenticationSource>();
         public IEnumerable<AuthenticationSource> AuthenticationSources => _authenticationSources;
 
-        public CollectionMatchPolicy RuleMatchPolicy { get; set; }
+        public CollectionMatchRule RuleMatchPolicy { get; set; }
         private List<PolicyRule> _rules = new List<PolicyRule>();
         public IEnumerable<PolicyRule> Rules => _rules;
 

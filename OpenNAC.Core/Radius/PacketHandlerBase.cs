@@ -1,8 +1,8 @@
 ﻿using Flexinets.Radius.Core;
 using Microsoft.Extensions.Logging;
+using OpenNAC.Core.Endpoints;
 using OpenNAC.Core.Policies;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
@@ -10,32 +10,54 @@ namespace OpenNAC.Core.Radius
 {
     public abstract class PacketHandlerBase : IPacketHandler
     {
-        private readonly RadiusClient _source;
-        private readonly IEnumerable<AccessPolicy> _accessPolicies;
-
         protected readonly ILogger Logger;
+        protected readonly IAccessPolicyRepository AccessPolicies;
+        protected readonly IRadiusClientRepository RadiusClients;
+        protected readonly IEndpointRepository Endpoints;
 
-        public PacketHandlerBase(RadiusClient source, IEnumerable<AccessPolicy> accessPolicies, ILogger logger)
+        public PacketHandlerBase(ILogger<PacketHandlerBase> logger,
+            IAccessPolicyRepository accessPolicyRepository,
+            IRadiusClientRepository radiusClientRepository,
+            IEndpointRepository endpointRepository)
         {
-            _source = source;
-            _accessPolicies = accessPolicies;
             Logger = logger;
+            AccessPolicies = accessPolicyRepository;
+            RadiusClients = radiusClientRepository;
+            Endpoints = endpointRepository;
         }
 
         public IRadiusPacket HandlePacket(IPAddress sourceAddress, IRadiusPacket packet)
         {
+            var radiusClient = RadiusClients.Get(sourceAddress);
+
+            if(radiusClient == null)
+            {
+                Logger.LogError("Radius Client is not recognized");
+                throw new InvalidOperationException("Radius Client is not recognized.");
+            }
+
             var attributesLogString = string.Empty;
             foreach(var attr in packet.Attributes)
             {
                 attributesLogString += "\t" + attr.Key + " = " + string.Join(", ", attr.Value.Select(v => v.ToString())) + Environment.NewLine;
             }
 
-            Logger.LogInformation("Received RADIUS Packet from {0} ({1}) - Code: {2}\r\n" +
-                "\tAttributes:\r\n{3}", _source.Name, _source.IPAddress, packet.Code, attributesLogString);
+            Logger.LogInformation("Received RADIUS Packet from {0} - Code: {1}\r\n" +
+                "\tAttributes:\r\n{2}", sourceAddress, packet.Code, attributesLogString);
 
-            var matchingPolicies = _accessPolicies.Where(x => x.Enabled == true &&
-                x.ConditionMatchPolicy == CollectionMatchPolicy.MATCH_ALL ?
-                    x.Conditions.All(x => x.IsSatisfied()) : x.Conditions.Any(x => x.IsSatisfied()))
+            var macAddress = packet.GetAttribute<string>("Calling-Station-Id");
+            var requestEndpoint = Endpoints.Get(macAddress);
+
+            if(requestEndpoint == null)
+            {
+                requestEndpoint = new Endpoint(macAddress, macAddress);
+            }
+
+            var context = new RadiusRequestContext(sourceAddress, packet, packet.CreateResponsePacket(PacketCode.AccessReject), radiusClient, requestEndpoint);
+
+            var matchingPolicies = AccessPolicies.GetAll().Where(x => x.Enabled == true &&
+                x.ConditionMatchPolicy == CollectionMatchRule.MATCH_ALL ?
+                    x.Conditions.All(x => x.IsSatisfied(context)) : x.Conditions.Any(x => x.IsSatisfied(context)))
                         .OrderBy(x => x.Priority);
 
             if (matchingPolicies.Count() == 0)
@@ -46,8 +68,6 @@ namespace OpenNAC.Core.Radius
                 else
                     return null;
             }
-
-            var macAddress = packet.GetAttribute<string>("Calling-Station-Id");
 
             foreach (var policy in matchingPolicies)
             {
@@ -74,15 +94,19 @@ namespace OpenNAC.Core.Radius
                     case PacketCode.AccessRequest:
                         IRadiusPacket responsePacket = packet.CreateResponsePacket(PacketCode.AccessReject);
 
-                        var authenticationResults = policy.AuthenticationSources.Select(authSource => authSource.Authenticate(packet));
+                        var authenticationResults = policy.AuthenticationSources.Select(authSource => authSource.Authenticate(context));
 
-                        if (packet.GetAttribute<string>("User-Name") == "user@example.com" && packet.GetAttribute<string>("User-Password") == "1234")
+                        if(!authenticationResults.Any())
                         {
-                            responsePacket = packet.CreateResponsePacket(PacketCode.AccessAccept);
-                            responsePacket.AddAttribute("Acct-Interim-Interval", 60);
+                            context.Response = packet.CreateResponsePacket(PacketCode.AccessReject);
+                            return context.Response;
+                        }
+                        else
+                        {
+                            context.Response = packet.CreateResponsePacket(PacketCode.AccessAccept);
                         }
 
-                        return HandleAccessPacket(new RadiusRequestContext(packet, responsePacket, _source));
+                        return HandleAccessPacket(context);
                     default:
                         throw new InvalidOperationException(string.Format("Unhandled Radius Packet received. ({0})", packet.Code));
                 }

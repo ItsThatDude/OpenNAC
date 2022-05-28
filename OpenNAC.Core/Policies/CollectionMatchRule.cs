@@ -1,6 +1,6 @@
 ﻿namespace OpenNAC.Core.Policies
 {
-    public enum CollectionMatchPolicy
+    public enum CollectionMatchRule
     {
         MATCH_ALL = 0,
         MATCH_ANY = 1
