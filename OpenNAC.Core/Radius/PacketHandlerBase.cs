@@ -1,5 +1,6 @@
 ﻿using Flexinets.Radius.Core;
 using Microsoft.Extensions.Logging;
+using OpenNAC.Core.Authentication;
 using OpenNAC.Core.Endpoints;
 using OpenNAC.Core.Policies;
 using System;
@@ -71,6 +72,8 @@ namespace OpenNAC.Core.Radius
 
             foreach (var policy in matchingPolicies)
             {
+                Logger.LogInformation("Evaluating Policy {0} for remote client {1}", policy.Name, sourceAddress);
+
                 switch (packet.Code)
                 {
                     case PacketCode.AccountingRequest:
@@ -88,34 +91,45 @@ namespace OpenNAC.Core.Radius
                                     break;
                             }
 
-                            return packet.CreateResponsePacket(PacketCode.AccountingResponse);
+                            return HandleAccountingRequest(context);
                         }
                         break;
                     case PacketCode.AccessRequest:
-                        IRadiusPacket responsePacket = packet.CreateResponsePacket(PacketCode.AccessReject);
 
-                        var authenticationResults = policy.AuthenticationSources.Select(authSource => authSource.Authenticate(context));
+                        if (policy.AuthenticationSources.Count() > 0) {
+                            var authenticationResults = policy.AuthenticationSources.Select(authSource => authSource.Authenticate(context));
 
-                        if(!authenticationResults.Any())
-                        {
-                            context.Response = packet.CreateResponsePacket(PacketCode.AccessReject);
-                            return context.Response;
+                            if (authenticationResults.Any(a => a.Outcome == AuthenticationOutcome.CHALLENGE))
+                            {
+                                var pkt = packet.CreateResponsePacket(PacketCode.AccessChallenge);
+                                pkt.AddAttribute("State", "test");
+                                return pkt;
+                            }
+
+                            if (!authenticationResults.Any(a => a.Outcome == AuthenticationOutcome.SUCCESS))
+                                return packet.CreateResponsePacket(PacketCode.AccessReject);
+
+                            context.Authentication.AddRange(authenticationResults);
                         }
-                        else
+
+                        foreach(var rule in policy.Rules.Where(r => r.IsSatisfied(context)))
                         {
-                            context.Response = packet.CreateResponsePacket(PacketCode.AccessAccept);
+                            Logger.LogInformation("Applying Rule {0}", context.Response.Code);
+                            var output = rule.ApplyRule(context);
+                            Logger.LogInformation("PacketCode {0}", output.Response.Code);
                         }
 
-                        return HandleAccessPacket(context);
+                        return HandleAccessRequest(context) ?? packet.CreateResponsePacket(PacketCode.AccessReject);
                     default:
                         throw new InvalidOperationException(string.Format("Unhandled Radius Packet received. ({0})", packet.Code));
                 }
             }
 
-            return null;
+            throw new Exception("No matching policies could fulfil the RADIUS Request.");
         }
 
-        public abstract IRadiusPacket HandleAccessPacket(RadiusRequestContext context);
+        public abstract IRadiusPacket HandleAccessRequest(RadiusRequestContext context);
+        public abstract IRadiusPacket HandleAccountingRequest(RadiusRequestContext context);
 
 
         /// <summary>

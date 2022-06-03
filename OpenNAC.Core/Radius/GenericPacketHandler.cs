@@ -13,7 +13,12 @@ namespace OpenNAC.Core.Radius
             IEndpointRepository endpointRepository)
             : base(logger, accessPolicyRepository, radiusClientRepository, endpointRepository) { }
 
-        public override IRadiusPacket HandleAccessPacket(RadiusRequestContext context)
+        public override IRadiusPacket HandleAccessRequest(RadiusRequestContext context)
+        {
+            return context.Response;
+        }
+
+        public override IRadiusPacket HandleAccountingRequest(RadiusRequestContext context)
         {
             return context.Response;
         }

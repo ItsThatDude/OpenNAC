@@ -1,0 +1,67 @@
+﻿# VendorId 14823
+VendorSpecificAttribute	14823	1	User-Role	string
+VendorSpecificAttribute	14823	2	User-Vlan	integer
+VendorSpecificAttribute	14823	3	Priv-Admin-User	integer
+VendorSpecificAttribute	14823	4	Admin-Role	string
+VendorSpecificAttribute	14823	5	Essid-Name	string
+VendorSpecificAttribute	14823	6	Location-Id	string
+VendorSpecificAttribute	14823	7	Port-Identifier	string
+VendorSpecificAttribute	14823	8	MMS-User-Template	string
+VendorSpecificAttribute	14823	9	Named-User-Vlan	string
+VendorSpecificAttribute	14823	10	AP-Group	string
+
+VendorSpecificAttribute	14823	11	Framed-IPv6-Address	string
+VendorSpecificAttribute	14823	12	Device-Type	string
+VendorSpecificAttribute	14823	14	No-DHCP-Fingerprint	integer
+VendorSpecificAttribute	14823	15	Mdps-Device-Udid	string
+VendorSpecificAttribute	14823	16	Mdps-Device-Imei	string
+VendorSpecificAttribute	14823	17	Mdps-Device-Iccid	string
+VendorSpecificAttribute	14823	18	Mdps-Max-Devices	integer
+VendorSpecificAttribute	14823	19	Mdps-Device-Name	string
+VendorSpecificAttribute	14823	20	Mdps-Device-Product	string
+
+VendorSpecificAttribute	14823	21	Mdps-Device-Version	string
+VendorSpecificAttribute	14823	22	Mdps-Device-Serial	string
+VendorSpecificAttribute	14823	23	CPPM-Role	string
+VendorSpecificAttribute	14823	24	AirGroup-User-Name	string
+VendorSpecificAttribute	14823	25	AirGroup-Shared-User	string
+VendorSpecificAttribute	14823	26	AirGroup-Shared-Role	string
+VendorSpecificAttribute	14823	27	AirGroup-Device-Type	integer
+VendorSpecificAttribute	14823	28	Auth-Survivability	string
+VendorSpecificAttribute	14823	29	AS-User-Name	string
+VendorSpecificAttribute	14823	30	AS-Credential-Hash	string
+
+VendorSpecificAttribute	14823	31	WorkSpace-App-Name	string
+VendorSpecificAttribute	14823	32	Mdps-Provisioning-Settings	string
+VendorSpecificAttribute	14823	33	Mdps-Device-Profile	string
+VendorSpecificAttribute	14823	34	AP-IP-Address	ipaddr
+VendorSpecificAttribute	14823	35	AirGroup-Shared-Group	string
+VendorSpecificAttribute	14823	36	User-Group	string
+VendorSpecificAttribute	14823	37	Network-SSO-Token	string
+VendorSpecificAttribute	14823	38	AirGroup-Version	integer
+VendorSpecificAttribute	14823	39	Auth-SurvMethod	integer
+VendorSpecificAttribute	14823	40	Port-Bounce-Host	integer
+
+VendorSpecificAttribute	14823	41	Calea-Server-Ip	ipaddr
+VendorSpecificAttribute	14823	42	Admin-Path	string
+VendorSpecificAttribute	14823	43	Captive-Portal-URL	string
+VendorSpecificAttribute	14823	44	MPSK-Passphrase	octet
+VendorSpecificAttribute	14823	45	ACL-Server-Query-Info	string
+VendorSpecificAttribute	14823	46	Command-String	string
+VendorSpecificAttribute	14823	47	Network-Profile	string
+VendorSpecificAttribute	14823	48	Admin-Device-Group	string
+VendorSpecificAttribute	14823	49	PoE-Priority	integer
+VendorSpecificAttribute	14823	50	Port-Auth-Mode	integer
+
+VendorSpecificAttribute	14823	51	NAS-Filter-Rule	string
+VendorSpecificAttribute	14823	52	QoS-Trust-Mode	integer
+VendorSpecificAttribute	14823	53	UBT-Gateway-Role	string
+VendorSpecificAttribute	14823	54	Gateway-Zone	string
+
+VendorSpecificAttribute	14823	58	STP-Admin-Edge-Port	integer
+
+VendorSpecificAttribute	14823	59	UBT-Gateway-CPPM-Role	string
+
+VendorSpecificAttribute	14823	60	AP-MAC-Address	string
+VendorSpecificAttribute	14823	61	Device-MAC-Address	string
+VendorSpecificAttribute	14823	63	Device-Traffic-Class	integer

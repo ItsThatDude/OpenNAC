@@ -14,4 +14,10 @@
     <ProjectReference Include="..\OpenNAC.Core\OpenNAC.Core.csproj" />
     <ProjectReference Include="..\OpenNAC.Vendors.Aruba\OpenNAC.Vendors.Aruba.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Dictionaries\radius.dictionary">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

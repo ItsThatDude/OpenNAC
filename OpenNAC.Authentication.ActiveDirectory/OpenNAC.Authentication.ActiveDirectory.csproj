@@ -8,10 +8,4 @@
     <ProjectReference Include="..\OpenNAC.Core\OpenNAC.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Dictionaries\aruba.dictionary">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

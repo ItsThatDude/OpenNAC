@@ -5,6 +5,7 @@ using OpenNAC.Core.Authentication;
 using OpenNAC.Core.Endpoints;
 using OpenNAC.Core.Policies;
 using OpenNAC.Core.Policies.Conditions;
+using OpenNAC.Core.Policies.Rules;
 using OpenNAC.Core.Radius;
 using OpenNAC.Vendors.Aruba.Radius;
 using System.Net;
@@ -43,8 +44,14 @@ namespace OpenNAC.Service
                         };
 
                         policy.AddCondition(new AttributeCondition("Filter-Id", Comparator.EQUAL_TO, "Test"));
-
+                        policy.AddAuthenticationMethod(new PAPAuthenticationMethod());
                         policy.AddAuthenticationSource(new TestAuthenticationSource());
+                        policy.AddRule(new PolicyRule("User-Name", Comparator.EQUAL_TO, "user@example.com", new PolicyRuleAction[]
+                        {
+                            new AcceptRequestAction(),
+                            new AddRadiusAttributeAction("User-Role", "Test"),
+                            new AddRadiusAttributeAction("Filter-Id", (context) => context.SourceAddress.ToString())
+                        }));
 
                         return new InMemoryAccessPolicyRepository(new[]
                         {

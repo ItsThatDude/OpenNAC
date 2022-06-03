@@ -39,9 +39,17 @@ namespace OpenNAC.Service
             {
                 var devices = _radiusClients.GetAll();
 
-                var dictionaryPath = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + "/Content/Radius.dictionary";
-                var dictionary = new RadiusDictionary(dictionaryPath, NullLogger<RadiusDictionary>.Instance);
-                var radiusPacketParser = new RadiusPacketParser(NullLogger<RadiusPacketParser>.Instance, dictionary);
+                var dictionaryBasePath = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) + "/Dictionaries";
+                var dictionaryFiles = Directory.GetFiles(dictionaryBasePath, "*.dictionary", SearchOption.AllDirectories);
+
+                var aggregateDictionary = new AggregateRadiusDictionary();
+                foreach (var dictionaryPath in dictionaryFiles)
+                {
+                    _logger.LogInformation("Loading Dictionary from {0}", dictionaryPath);
+                    aggregateDictionary.AddDictionary(new RadiusDictionary(dictionaryPath, NullLogger<RadiusDictionary>.Instance));
+                }
+
+                var radiusPacketParser = new RadiusPacketParser(NullLogger<RadiusPacketParser>.Instance, aggregateDictionary);
                 var repository = new PacketHandlerRepository();
                 var udpClientFactory = new UdpClientFactory();
 
@@ -62,6 +70,8 @@ namespace OpenNAC.Service
                     repository.AddPacketHandler(device.IPAddress, handler, device.SharedSecret);
                 }
 
+                var radiusServerLogger = _serviceProvider.GetService<ILogger<RadiusServer>>();
+
                 _logger.LogInformation("Starting Authentication Server...");
                 _authenticationServer = new RadiusServer(
                     new UdpClientFactory(),
@@ -69,7 +79,7 @@ namespace OpenNAC.Service
                     radiusPacketParser,
                     RadiusServerType.Authentication,
                     repository,
-                    NullLogger<RadiusServer>.Instance);
+                    radiusServerLogger);
                 _authenticationServer.Start();
                 _logger.LogInformation("Authentication Server Started");
 
@@ -80,7 +90,7 @@ namespace OpenNAC.Service
                    radiusPacketParser,
                    RadiusServerType.Accounting,
                    repository,
-                   NullLogger<RadiusServer>.Instance);
+                   radiusServerLogger);
                 _accountingServer.Start();
                 _logger.LogInformation("Accounting Server Started");
             }

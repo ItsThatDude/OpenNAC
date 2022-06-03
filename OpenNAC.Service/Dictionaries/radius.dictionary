@@ -1801,7 +1801,7 @@ VendorSpecificAttribute	14823	29	AS-User-Name	string
 VendorSpecificAttribute	14823	30	AS-Credential-Hash	string
 
 VendorSpecificAttribute	14823	31	WorkSpace-App-Name	string
-VendorSpecificAttribute	14823	Mdps-Provisioning-Settings		32	string
+VendorSpecificAttribute	14823	32	Mdps-Provisioning-Settings	string
 VendorSpecificAttribute	14823	33	Mdps-Device-Profile	string
 VendorSpecificAttribute	14823	34	AP-IP-Address	ipaddr
 VendorSpecificAttribute	14823	35	AirGroup-Shared-Group	string

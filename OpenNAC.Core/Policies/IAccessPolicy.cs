@@ -5,6 +5,7 @@ namespace OpenNAC.Core.Policies
 {
     public interface IAccessPolicy
     {
+        string Name { get; }
         int Priority { get; }
         bool Enabled { get; }
         bool EnableAccounting { get; }

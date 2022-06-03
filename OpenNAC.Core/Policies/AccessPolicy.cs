@@ -17,6 +17,9 @@ namespace OpenNAC.Core.Policies
         private List<PolicyCondition> _conditions = new List<PolicyCondition>();
         public IEnumerable<PolicyCondition> Conditions => _conditions;
 
+        private List<AuthenticationMethod> _authenticationMethods = new List<AuthenticationMethod>();
+        public IEnumerable<AuthenticationMethod> AuthenticationMethods => _authenticationMethods;
+
         private List<AuthenticationSource> _authenticationSources = new List<AuthenticationSource>();
         public IEnumerable<AuthenticationSource> AuthenticationSources => _authenticationSources;
 
@@ -40,6 +43,16 @@ namespace OpenNAC.Core.Policies
         public void RemoveCondition(PolicyCondition condition)
         {
             _conditions.Remove(condition);
+        }
+
+        public void AddAuthenticationMethod(AuthenticationMethod authMethod)
+        {
+            _authenticationMethods.Add(authMethod);
+        }
+
+        public void RemoveAuthenticationMethod(AuthenticationMethod authMethod)
+        {
+            _authenticationMethods.Remove(authMethod);
         }
 
         public void AddAuthenticationSource(AuthenticationSource authSource)
