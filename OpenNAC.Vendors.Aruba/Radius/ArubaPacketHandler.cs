@@ -1,5 +1,4 @@
-﻿using Flexinets.Radius.Core;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OpenNAC.Core.Endpoints;
 using OpenNAC.Core.Policies;
 using OpenNAC.Core.Radius;

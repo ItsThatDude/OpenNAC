@@ -6,7 +6,7 @@ namespace OpenNAC.Core.Policies.Rules
     {
         public override RadiusRequestContext Execute(RadiusRequestContext context)
         {
-            context.Response = context.Response.CreateResponsePacket(Flexinets.Radius.Core.PacketCode.AccessReject);
+            context.Response = context.Response.CreateResponsePacket(RadiusPacketType.AccessReject);
 
             return context;
         }

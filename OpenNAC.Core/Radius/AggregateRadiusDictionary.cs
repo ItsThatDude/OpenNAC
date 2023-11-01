@@ -1,5 +1,4 @@
-﻿using Flexinets.Radius.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace OpenNAC.Core.Radius

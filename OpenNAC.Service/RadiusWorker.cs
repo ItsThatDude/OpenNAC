@@ -1,15 +1,12 @@
-using Flexinets.Net;
-using Flexinets.Radius;
-using Flexinets.Radius.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using OpenNAC.Core.Policies;
+using OpenNAC.Core.Net;
 using OpenNAC.Core.Radius;
+using OpenNAC.RadiusServer;
 using OpenNAC.Vendors.Aruba.Radius;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -20,8 +17,8 @@ namespace OpenNAC.Service
     public class RadiusWorker : IHostedService, IDisposable
     {
         private readonly ILogger<RadiusWorker> _logger;
-        private RadiusServer _authenticationServer;
-        private RadiusServer _accountingServer;
+        private RadiusServer.RadiusServer _authenticationServer;
+        private RadiusServer.RadiusServer _accountingServer;
 
         private readonly IRadiusClientRepository _radiusClients;
         private readonly IServiceProvider _serviceProvider;
@@ -33,7 +30,7 @@ namespace OpenNAC.Service
             _serviceProvider = serviceProvider;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -70,10 +67,10 @@ namespace OpenNAC.Service
                     repository.AddPacketHandler(device.IPAddress, handler, device.SharedSecret);
                 }
 
-                var radiusServerLogger = _serviceProvider.GetService<ILogger<RadiusServer>>();
+                var radiusServerLogger = _serviceProvider.GetService<ILogger<RadiusServer.RadiusServer>>();
 
                 _logger.LogInformation("Starting Authentication Server...");
-                _authenticationServer = new RadiusServer(
+                _authenticationServer = new RadiusServer.RadiusServer(
                     new UdpClientFactory(),
                     new IPEndPoint(IPAddress.Any, 1812),
                     radiusPacketParser,
@@ -84,7 +81,7 @@ namespace OpenNAC.Service
                 _logger.LogInformation("Authentication Server Started");
 
                 _logger.LogInformation("Starting Accounting Server...");
-                _accountingServer = new RadiusServer(
+                _accountingServer = new RadiusServer.RadiusServer(
                    udpClientFactory,
                    new IPEndPoint(IPAddress.Any, 1813),
                    radiusPacketParser,
@@ -99,6 +96,8 @@ namespace OpenNAC.Service
                 _logger.LogCritical("Failed to start the Radius Worker Service.", ex);
                 throw;
             }
+
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

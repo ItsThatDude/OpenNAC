@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using OpenNAC.Core.Authentication;
+using OpenNAC.Core.Authentication.EAP;
 using OpenNAC.Core.Endpoints;
 using OpenNAC.Core.Policies;
 using OpenNAC.Core.Policies.Conditions;
@@ -23,10 +24,11 @@ namespace OpenNAC.Service
             Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(logging =>
                 {
-                    logging.AddConsole(options =>
+                    logging.AddSimpleConsole(options =>
                     {
                         options.IncludeScopes = true;
-                        options.TimestampFormat = "[hh:mm:ss] ";
+                        options.SingleLine = true;
+                        options.TimestampFormat = "[HH:mm:ss] ";
                     });
                 })
                 .ConfigureServices((hostContext, services) =>
@@ -44,6 +46,7 @@ namespace OpenNAC.Service
                         };
 
                         policy.AddCondition(new AttributeCondition("Filter-Id", Comparator.EQUAL_TO, "Test"));
+                        policy.AddAuthenticationMethod(new EAPAuthenticationMethod());
                         policy.AddAuthenticationMethod(new PAPAuthenticationMethod());
                         policy.AddAuthenticationSource(new TestAuthenticationSource());
                         policy.AddRule(new PolicyRule("User-Name", Comparator.EQUAL_TO, "user@example.com", new PolicyRuleAction[]
@@ -58,11 +61,12 @@ namespace OpenNAC.Service
                             policy
                         });
                     });
+
                     services.AddSingleton<IRadiusClientRepository, InMemoryRadiusClientRepository>(configure =>
                     {
                         return new InMemoryRadiusClientRepository(new[]
                         {
-                            new RadiusClient { IPAddress = new IPAddress(new byte[] { 192, 168, 1, 33 }), Name = "Aruba RADIUS Device", PacketHandler = "Aruba", SharedSecret = "Test1234" },
+                            new RadiusClient { IPAddress = new IPAddress(new byte[] { 192, 168, 1, 62 }), Name = "Aruba RADIUS Device", PacketHandler = "Aruba", SharedSecret = "Test1234" },
                             new RadiusClient { IPAddress = IPAddress.Any, Name = "Generic RADIUS Device", PacketHandler = "Default", SharedSecret = "Test1234" }
                         });
                     });

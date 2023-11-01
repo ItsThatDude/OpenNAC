@@ -1,5 +1,4 @@
-﻿using Flexinets.Radius.Core;
-using OpenNAC.Core.Authentication;
+﻿using OpenNAC.Core.Authentication;
 using OpenNAC.Core.Endpoints;
 using System.Collections.Generic;
 using System.Net;

@@ -9,10 +9,10 @@ namespace OpenNAC.Core.Policies.Rules
 
         private Func<RadiusRequestContext, string> _computeAttributeValue;
 
-        public AddRadiusAttributeAction(string attributeName, Func<RadiusRequestContext, string> func)
+        public AddRadiusAttributeAction(string attributeName, Func<RadiusRequestContext, string> value)
         {
             AttributeName = attributeName;
-            _computeAttributeValue = func;
+            _computeAttributeValue = value;
         }
 
         public AddRadiusAttributeAction(string attributeName, string attributeValue)

@@ -1,5 +1,4 @@
-﻿using Flexinets.Radius.Core;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OpenNAC.Core.Authentication;
 using OpenNAC.Core.Endpoints;
 using OpenNAC.Core.Policies;
@@ -44,7 +43,7 @@ namespace OpenNAC.Core.Radius
             }
 
             Logger.LogInformation("Received RADIUS Packet from {0} - Code: {1}\r\n" +
-                "\tAttributes:\r\n{2}", sourceAddress, packet.Code, attributesLogString);
+                "\tAttributes:\r\n{2}", sourceAddress, packet.PacketType, attributesLogString);
 
             var macAddress = packet.GetAttribute<string>("Calling-Station-Id");
             var requestEndpoint = Endpoints.Get(macAddress);
@@ -54,7 +53,7 @@ namespace OpenNAC.Core.Radius
                 requestEndpoint = new Endpoint(macAddress, macAddress);
             }
 
-            var context = new RadiusRequestContext(sourceAddress, packet, packet.CreateResponsePacket(PacketCode.AccessReject), radiusClient, requestEndpoint);
+            var context = new RadiusRequestContext(sourceAddress, packet, packet.CreateResponsePacket(RadiusPacketType.AccessReject), radiusClient, requestEndpoint);
 
             var matchingPolicies = AccessPolicies.GetAll().Where(x => x.Enabled == true &&
                 x.ConditionMatchPolicy == CollectionMatchRule.MATCH_ALL ?
@@ -64,8 +63,8 @@ namespace OpenNAC.Core.Radius
             if (matchingPolicies.Count() == 0)
             {
                 Logger.LogWarning("There are no matching policies for this RADIUS Request.");
-                if (packet.Code == PacketCode.AccessRequest)
-                    return packet.CreateResponsePacket(PacketCode.AccessReject);
+                if (packet.PacketType == RadiusPacketType.AccessRequest)
+                    return packet.CreateResponsePacket(RadiusPacketType.AccessReject);
                 else
                     return null;
             }
@@ -74,9 +73,9 @@ namespace OpenNAC.Core.Radius
             {
                 Logger.LogInformation("Evaluating Policy {0} for remote client {1}", policy.Name, sourceAddress);
 
-                switch (packet.Code)
+                switch (packet.PacketType)
                 {
-                    case PacketCode.AccountingRequest:
+                    case RadiusPacketType.AccountingRequest:
                         if (policy.EnableAccounting)
                         {
                             var acctStatusType = packet.GetAttribute<AcctStatusType>("Acct-Status-Type");
@@ -94,34 +93,34 @@ namespace OpenNAC.Core.Radius
                             return HandleAccountingRequest(context);
                         }
                         break;
-                    case PacketCode.AccessRequest:
+                    case RadiusPacketType.AccessRequest:
 
                         if (policy.AuthenticationSources.Count() > 0) {
                             var authenticationResults = policy.AuthenticationSources.Select(authSource => authSource.Authenticate(context));
 
                             if (authenticationResults.Any(a => a.Outcome == AuthenticationOutcome.CHALLENGE))
                             {
-                                var pkt = packet.CreateResponsePacket(PacketCode.AccessChallenge);
+                                var pkt = packet.CreateResponsePacket(RadiusPacketType.AccessChallenge);
                                 pkt.AddAttribute("State", "test");
                                 return pkt;
                             }
 
                             if (!authenticationResults.Any(a => a.Outcome == AuthenticationOutcome.SUCCESS))
-                                return packet.CreateResponsePacket(PacketCode.AccessReject);
+                                return packet.CreateResponsePacket(RadiusPacketType.AccessReject);
 
                             context.Authentication.AddRange(authenticationResults);
                         }
 
                         foreach(var rule in policy.Rules.Where(r => r.IsSatisfied(context)))
                         {
-                            Logger.LogInformation("Applying Rule {0}", context.Response.Code);
+                            Logger.LogInformation("Applying Rule {0}", context.Response.PacketType);
                             var output = rule.ApplyRule(context);
-                            Logger.LogInformation("PacketCode {0}", output.Response.Code);
+                            Logger.LogInformation("PacketCode {0}", output.Response.PacketType);
                         }
 
-                        return HandleAccessRequest(context) ?? packet.CreateResponsePacket(PacketCode.AccessReject);
+                        return HandleAccessRequest(context) ?? packet.CreateResponsePacket(RadiusPacketType.AccessReject);
                     default:
-                        throw new InvalidOperationException(string.Format("Unhandled Radius Packet received. ({0})", packet.Code));
+                        throw new InvalidOperationException(string.Format("Unhandled Radius Packet received. ({0})", packet.PacketType));
                 }
             }
 
@@ -129,8 +128,8 @@ namespace OpenNAC.Core.Radius
         }
 
         public abstract IRadiusPacket HandleAccessRequest(RadiusRequestContext context);
-        public abstract IRadiusPacket HandleAccountingRequest(RadiusRequestContext context);
 
+        public abstract IRadiusPacket HandleAccountingRequest(RadiusRequestContext context);
 
         /// <summary>
         /// Dispose

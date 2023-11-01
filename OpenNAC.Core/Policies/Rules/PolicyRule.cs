@@ -1,5 +1,4 @@
-﻿using Flexinets.Radius.Core;
-using OpenNAC.Core.Policies.Rules;
+﻿using OpenNAC.Core.Policies.Rules;
 using OpenNAC.Core.Radius;
 using System;
 
